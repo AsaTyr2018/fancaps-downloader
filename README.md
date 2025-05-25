@@ -8,6 +8,8 @@ An automated image downloader and queue system for \[fancaps.net], built with Py
 > Original CLI tool based on the work by m-patino, improved and extended with automation and interface by AsaTyr.
 
 ---
+Preview:
+![grafik](https://github.com/user-attachments/assets/bd5ce8a3-a8a4-4f9c-937c-5c8b7811e684)
 
 ## ✨ Features
 
