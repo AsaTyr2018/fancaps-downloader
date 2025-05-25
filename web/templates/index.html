@@ -27,10 +27,7 @@
 <h2>📦 Archiv (nur lesbar)</h2>
 <ul>
     {% for url in archive %}
-        {% set folder_name = url.split("/")[-1].replace("?", "_").replace("&", "_").replace("=", "_") %}
-        <li>
-            <a href="file:///T:/{{ folder_name }}" target="_blank">{{ url }}</a>
-        </li>
+    <li>{{ url }}</li>
     {% endfor %}
 </ul>
 </body>
