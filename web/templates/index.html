@@ -1,34 +1,142 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Fancaps Daemon Interface</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #1e1e1e;
+        color: #dcdcdc;
+        margin: 20px;
+    }
+
+    h1, h2 {
+        color: #ffffff;
+    }
+
+    input[type="text"] {
+        width: 80%;
+        padding: 8px;
+        background-color: #2d2d2d;
+        color: #dcdcdc;
+        border: 1px solid #555;
+        border-radius: 4px;
+    }
+
+    button {
+        padding: 6px 12px;
+        background-color: #3c3c3c;
+        color: #dcdcdc;
+        border: 1px solid #666;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #505050;
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    li {
+        margin-bottom: 8px;
+    }
+
+    a {
+        color: #6fa8dc;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .container {
+        display: flex;
+        gap: 20px;
+    }
+
+    .panel {
+        flex: 1;
+        padding-right: 15px;
+    }
+
+    .log-panel {
+        flex: 1;
+        max-height: 80vh;
+        overflow-y: auto;
+        border-left: 1px solid #444;
+        padding-left: 15px;
+    }
+
+    pre#log-content {
+        background: #111;
+        color: #0f0;
+        padding: 10px;
+        font-size: 12px;
+        overflow-y: scroll;
+        max-height: 600px;
+        white-space: pre-wrap;
+        border: 1px solid #333;
+        border-radius: 4px;
+    }
+</style>
+
 </head>
 <body>
     <h1>🌀 Fancaps Daemon Interface</h1>
 
-    <h2>📥 Queue</h2>
-    <form method="POST">
-        <input type="text" name="url" placeholder="New Fancaps-URL" required size="80">
-        <button type="submit" name="add_url">Add</button>
-    </form>
-    <ul>
-        {% for url in queue %}
-        <li>
-            {{ url }}
-            <form method="POST" style="display:inline">
-                <input type="hidden" name="delete_url" value="{{ url }}">
-                <button type="submit">🗑️ Remove</button>
+    <div style="display: flex; gap: 20px;">
+        <!-- Left: Queue + Archiv -->
+        <div style="flex: 1;">
+            <h2>📥 Queue</h2>
+            <form method="POST">
+                <input type="text" name="url" placeholder="New Fancaps-URL" required>
+                <button type="submit" name="add_url">Add</button>
             </form>
-        </li>
-        {% endfor %}
-    </ul>
+            <ul>
+                {% for url in queue %}
+                <li>
+                    <a href="{{ url }}" target="_blank">{{ url }}</a>
+                    <form method="POST" style="display:inline">
+                        <input type="hidden" name="delete_url" value="{{ url }}">
+                        <button type="submit">🗑️ Remove</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
 
-<h2>📦 Archiv (Read Only)</h2>
-<ul>
-    {% for url in archive %}
-    <li>{{ url }}</li>
-    {% endfor %}
-</ul>
+            <h2>📦 Archiv (Read Only)</h2>
+            <ul>
+                {% for url in archive %}
+                <li>{{ url }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Left: Live-Log -->
+        <div style="flex: 1; max-height: 80vh; overflow-y: auto; border-left: 1px solid #ccc; padding-left: 15px;">
+            <h2>📜 Daemon Log</h2>
+            <pre id="log-content" style="background: #111; color: #0f0; padding: 10px; font-size: 12px; overflow-y: scroll; max-height: 600px; white-space: pre-wrap;"></pre>
+        </div>
+    </div>
+
+    <script>
+        function updateLog() {
+            fetch("/log")
+                .then(response => response.text())
+                .then(text => {
+                    const logEl = document.getElementById("log-content");
+                    logEl.innerHTML = text;
+                    logEl.scrollTop = logEl.scrollHeight; // Autoscroll to bottom
+                });
+        }
+
+        setInterval(updateLog, 5000); // refresh every 5 seconds
+        updateLog(); // initial load
+    </script>
 </body>
 </html>
