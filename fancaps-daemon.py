@@ -12,14 +12,14 @@ LOG_FILE = "/var/log/fancaps-daemon.log"
 OUTPUT_DIR = "/opt/fancaps/downloads"
 INTERVAL_SECONDS = 300  # 5 Minuten
 
-# Logging Setup
+
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-# 🧼 Farben deaktivieren (nur Text ins Log)
+
 setattr(Colors, 'print', lambda msg, *_: logging.info(msg))
 
 def read_first_url():
@@ -42,17 +42,17 @@ def append_to_archive(url):
 
 def process_single_url(url):
     url_type = UrlSupport().getType(url)
-    Colors.print(f"🔎 URL-Typ erkannt: {url_type}")
+    Colors.print(f"🔎 URL-Typ: {url_type}")
 
     if url_type not in ['season', 'movie', 'episode']:
-        Colors.print(f"⚠️ Nicht unterstützter URL-Typ oder ungültige URL: {url}")
+        Colors.print(f"⚠️ Not supported URL-Typ or invalid URL: {url}")
         return False
 
     crawler = Crawler()
     links = crawler.crawl(url)
 
     if not links:
-        Colors.print("🚫 Keine Links zum Download gefunden.")
+        Colors.print("🚫 No links to download found.")
         return False
 
     downloader = Downloader()
@@ -62,21 +62,21 @@ def process_single_url(url):
         Colors.print(f"⬇️ Download startet: {folder_name}")
         downloader.downloadUrls(path, item['links'])
 
-    Colors.print(f"✅ Verarbeitung abgeschlossen für: {url}")
+    Colors.print(f"✅ Batch done for: {url}")
     return True
 
 def daemon_loop():
-    Colors.print("🌀 Fancaps Daemon gestartet")
+    Colors.print("🌀 Fancaps Daemon Started")
     while True:
         url = read_first_url()
         if url:
-            Colors.print(f"📥 Neue URL gefunden: {url}")
+            Colors.print(f"📥 New URL found: {url}")
             success = process_single_url(url)
             if success:
                 remove_url_from_queue(url)
                 append_to_archive(url)
         else:
-            Colors.print("📭 Keine neuen URLs. Warte auf Nachschub...")
+            Colors.print("📭 No new URLs. Starting Loop...")
         time.sleep(INTERVAL_SECONDS)
 
 if __name__ == "__main__":
