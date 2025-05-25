@@ -9,8 +9,8 @@
 
     <h2>📥 Queue</h2>
     <form method="POST">
-        <input type="text" name="url" placeholder="Neue Fancaps-URL" required size="80">
-        <button type="submit" name="add_url">Hinzufügen</button>
+        <input type="text" name="url" placeholder="New Fancaps-URL" required size="80">
+        <button type="submit" name="add_url">Add</button>
     </form>
     <ul>
         {% for url in queue %}
@@ -18,13 +18,13 @@
             {{ url }}
             <form method="POST" style="display:inline">
                 <input type="hidden" name="delete_url" value="{{ url }}">
-                <button type="submit">🗑️ Entfernen</button>
+                <button type="submit">🗑️ Remove</button>
             </form>
         </li>
         {% endfor %}
     </ul>
 
-<h2>📦 Archiv (nur lesbar)</h2>
+<h2>📦 Archiv (Read Only)</h2>
 <ul>
     {% for url in archive %}
     <li>{{ url }}</li>
