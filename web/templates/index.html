@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Fancaps Daemon Interface</title>
+</head>
+<body>
+    <h1>🌀 Fancaps Daemon Interface</h1>
+
+    <h2>📥 Queue</h2>
+    <form method="POST">
+        <input type="text" name="url" placeholder="Neue Fancaps-URL" required size="80">
+        <button type="submit" name="add_url">Hinzufügen</button>
+    </form>
+    <ul>
+        {% for url in queue %}
+        <li>
+            {{ url }}
+            <form method="POST" style="display:inline">
+                <input type="hidden" name="delete_url" value="{{ url }}">
+                <button type="submit">🗑️ Entfernen</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+<h2>📦 Archiv (nur lesbar)</h2>
+<ul>
+    {% for url in archive %}
+        {% set folder_name = url.split("/")[-1].replace("?", "_").replace("&", "_").replace("=", "_") %}
+        <li>
+            <a href="file:///T:/{{ folder_name }}" target="_blank">{{ url }}</a>
+        </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
