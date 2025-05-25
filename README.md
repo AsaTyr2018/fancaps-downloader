@@ -1,5 +1,9 @@
 # Fancaps Downloader
 
+Attention:
+Modified Version. Review 
+https://github.com/AsaTyr2018/fancaps-downloader/blob/main/Addition.md
+
 ## About <a name = "about"></a>
 
 This project it's a simple Python script for download screencaps from https://fancaps.net.
