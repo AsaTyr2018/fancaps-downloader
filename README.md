@@ -16,9 +16,11 @@ Preview:
 * ✅ Download image galleries from fancaps.net (TV, Anime, Movies)
 * ✅ CLI mode (`fancaps-downloader.py`) for manual and scripted downloads
 * ✅ Daemon mode (`fancaps-daemon.py`) for automatic background processing
+* ✅ Multi-threaded downloads with progress bars and automatic retry
 * ✅ `queue.txt` + `archive.txt` system for organized tracking
 * ✅ Web UI to manage queue entries (add/remove)
 * ✅ Read-only archive view in web UI
+* ✅ Live log viewer in the web UI
 * ✅ Fully runs as a background service (systemd ready)
 
 ---
@@ -46,7 +48,9 @@ pip install beautifulsoup4 tqdm flask
 * `--output`: Target folder for saving the images (default: `Downloads`)
 * `--batch-type`: Type of content in batch mode, either `season` or `movie` (optional)
 * `--batch-file`: Path to a text file containing URLs
-* `-?`: Show help message
+* `-h`, `--help`: Show help message
+
+Downloads run concurrently with progress bars and retry on failures.
 
 ### Supported URLs
 
@@ -69,6 +73,7 @@ Batch download from file:
 ```bash
 python fancaps-downloader.py --batch-file "batch.txt" --batch-type season --output "SeasonDownloads"
 ```
+You can also run the CLI via `python -m fancaps.cli`.
 
 ---
 
@@ -99,6 +104,7 @@ Test manually:
 ```bash
 python3 fancaps-daemon.py
 ```
+The daemon reads `/opt/fancaps/queue.txt` every 5 minutes and saves files to `/opt/fancaps/downloads`.
 
 Run as service:
 
@@ -150,6 +156,7 @@ Access via:
 http://<server-ip>:5080
 ```
 
+A real-time log view is available at `http://<server-ip>:5080/log`.
 ### Optional Auto-Start (systemd):
 
 ```ini
@@ -183,14 +190,24 @@ sudo systemctl start fancaps-web
 
 ```bash
 /opt/fancaps
-├── fancaps-downloader.py       # CLI downloader tool
-├── fancaps-daemon.py           # Daemon processor
+├── fancaps-downloader.py       # CLI entry point
+├── fancaps-daemon.py           # Daemon entry point
+├── fancaps/                    # Library package
+│   ├── cli.py                  # CLI logic
+│   ├── daemon.py               # Daemon logic
+│   └── web.py                  # Web launcher
+├── scraper/                    # Crawlers and downloader
+│   ├── crawler.py
+│   ├── downloader.py
+│   ├── url_support.py
+│   ├── crawlers/
+│   └── utils/
+├── web/                        # Flask application
+│   ├── fancaps_web.py
+│   └── templates/
 ├── queue.txt                   # URLs to download
 ├── archive.txt                 # Completed downloads
-├── downloads/                  # Download target
-└── web/
-    ├── fancaps_web.py          # Web UI backend
-    └── templates/index.html    # Web UI frontend
+└── downloads/                  # Download target
 ```
 
 ---
