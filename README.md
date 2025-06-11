@@ -48,7 +48,7 @@ pip install beautifulsoup4 tqdm flask
 * `--output`: Target folder for saving the images (default: `Downloads`)
 * `--batch-type`: Type of content in batch mode, either `season` or `movie` (optional)
 * `--batch-file`: Path to a text file containing URLs
-* `-?`: Show help message
+* `-h`, `--help`: Show help message
 
 Downloads run concurrently with progress bars and retry on failures.
 
@@ -190,14 +190,24 @@ sudo systemctl start fancaps-web
 
 ```bash
 /opt/fancaps
-├── fancaps-downloader.py       # CLI downloader tool
-├── fancaps-daemon.py           # Daemon processor
+├── fancaps-downloader.py       # CLI entry point
+├── fancaps-daemon.py           # Daemon entry point
+├── fancaps/                    # Library package
+│   ├── cli.py                  # CLI logic
+│   ├── daemon.py               # Daemon logic
+│   └── web.py                  # Web launcher
+├── scraper/                    # Crawlers and downloader
+│   ├── crawler.py
+│   ├── downloader.py
+│   ├── url_support.py
+│   ├── crawlers/
+│   └── utils/
+├── web/                        # Flask application
+│   ├── fancaps_web.py
+│   └── templates/
 ├── queue.txt                   # URLs to download
 ├── archive.txt                 # Completed downloads
-├── downloads/                  # Download target
-└── web/
-    ├── fancaps_web.py          # Web UI backend
-    └── templates/index.html    # Web UI frontend
+└── downloads/                  # Download target
 ```
 
 ---
