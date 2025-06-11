@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 import urllib.error
 import os
+from scraper.utils.url_utils import thumb_to_cdn
 
 class EpisodeCrawler:
     def crawl(self, url):
@@ -20,11 +21,8 @@ class EpisodeCrawler:
         epType = match.group(1)  # Episode type (tv or anime)
         subfolder = os.path.join(match.group(2), match.group(3))  # Construct subfolder path
 
-        # Set CDN based on episode type
-        if epType == 'tv':
-            cdn = 'tvcdn'
-        else:
-            cdn = 'ancdn'
+        # Build dynamic regex for thumbnail host
+        thumb_pattern = re.compile(rf"^https://{epType}thumbs.*?fancaps\.net/")
 
         while currentUrl:
             try:
@@ -46,14 +44,13 @@ class EpisodeCrawler:
                 break
 
             # Find all image tags with a specific source pattern
-            for img in beautifulSoup.find_all("img", src=re.compile("^https://"+epType+"thumbs.fancaps.net/")):
+            for img in beautifulSoup.find_all("img", src=thumb_pattern):
                 imgSrc = img.get("src")
                 imgAlt = img.get("alt")
                 if not alt:
                     alt = imgAlt  # Set alt if not already set
                 if alt == imgAlt:
-                    # Add image source to list, replacing the domain with the CDN domain
-                    picLinks.append(imgSrc.replace("https://"+epType+"thumbs.fancaps.net/", "https://"+cdn+".fancaps.net/"))
+                    picLinks.append(thumb_to_cdn(imgSrc))
 
             # Check for a next page link
             nextPage = beautifulSoup.find("a", href=lambda href: href and f"&page={pageNumber + 1}" in href)

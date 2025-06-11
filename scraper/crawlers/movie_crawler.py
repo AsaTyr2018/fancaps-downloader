@@ -1,6 +1,7 @@
 import re
 from bs4 import BeautifulSoup
 import urllib.request
+from scraper.utils.url_utils import thumb_to_cdn
 
 class MovieCrawler:
     def crawl(self, url):
@@ -20,6 +21,8 @@ class MovieCrawler:
             print(f"Error extracting subfolder: {e}")
             return
 
+        thumb_pattern = re.compile(r"^https://moviethumbs.*?fancaps\.net/")
+
         while currentUrl:
             try:
                 # Fetch and parse the webpage
@@ -29,14 +32,14 @@ class MovieCrawler:
             except Exception as e:
                 print(f"Error fetching or parsing page: {e}")
                 break
-            
-            for img in beautifulSoup.find_all("img", src=re.compile("^https://moviethumbs.fancaps.net/")):
+
+            for img in beautifulSoup.find_all("img", src=thumb_pattern):
                 imgSrc = img.get("src")
                 imgAlt = img.get("alt")
                 if not alt:
                     alt = imgAlt
                 if alt == imgAlt:
-                    picLinks.append(imgSrc.replace("https://moviethumbs.fancaps.net/", "https://mvcdn.fancaps.net/"))
+                    picLinks.append(thumb_to_cdn(imgSrc))
             
             try:
                 # Generate and verify the existence of the next page URL
