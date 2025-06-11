@@ -1,7 +1,6 @@
 import re
 from bs4 import BeautifulSoup
-import urllib.request
-import urllib.error
+import cloudscraper
 import os
 from scraper.utils.url_utils import thumb_to_cdn
 
@@ -24,21 +23,20 @@ class EpisodeCrawler:
         # Build dynamic regex for thumbnail host
         thumb_pattern = re.compile(rf"^https://{epType}thumbs.*?fancaps\.net/")
 
+        scraper = cloudscraper.create_scraper()
+
         while currentUrl:
             try:
-                # Make a request to the current URL
-                request = urllib.request.Request(currentUrl, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'})
-                page = urllib.request.urlopen(request)
-            except urllib.error.URLError as e:
-                print(f"Error opening URL: {e.reason}")
-                break
-            except urllib.error.HTTPError as e:
-                print(f"HTTP Error: {e.code} {e.reason}")
+                response = scraper.get(currentUrl, timeout=10)
+                if 'cf-browser-verification' in response.text:
+                    print('Cloudflare challenge detected. Aborting.')
+                    break
+            except Exception as e:
+                print(f"Error opening URL: {e}")
                 break
 
             try:
-                # Parse the HTML content
-                beautifulSoup = BeautifulSoup(page, "html.parser")
+                beautifulSoup = BeautifulSoup(response.text, "html.parser")
             except Exception as e:
                 print(f"Error parsing page: {e}")
                 break
@@ -64,3 +62,4 @@ class EpisodeCrawler:
             'subfolder': subfolder,  # Return subfolder path
             'links': picLinks  # Return list of picture links
         }
+

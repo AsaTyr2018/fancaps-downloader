@@ -23,5 +23,13 @@ class Crawler:
         else:
             return []
 
-        Colors.print(f"{url} crawling finished.",Colors.YELLOW)
+        Colors.print(f"{url} crawling finished.", Colors.YELLOW)
+        empty = True
+        for item in output:
+            if item.get("links"):
+                empty = False
+            else:
+                Colors.print("No images found for this entry. The page may be blocked or invalid.", Colors.WARNING)
+        if empty:
+            Colors.print("No image links parsed from URL. Possible blocking or invalid URL.", Colors.WARNING)
         return output
