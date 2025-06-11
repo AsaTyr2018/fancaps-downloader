@@ -6,6 +6,10 @@ class Colors:
     BLUE = '\033[94m'
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
+    FAIL = RED
+    WARNING = YELLOW
 
-    def print(text, color):
-        print(color + text + Colors.RESET)
+    @staticmethod
+    def print(text: str, color: str = RESET) -> None:
+        print(f"{color}{text}{Colors.RESET}")
+

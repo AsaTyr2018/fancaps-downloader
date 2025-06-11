@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
 from scraper.crawlers import episode_crawler
 import re
-import urllib.request
-import urllib.error
+import cloudscraper
 from scraper.utils.colors import Colors
 
 class SeasonCrawler:
@@ -16,21 +15,17 @@ class SeasonCrawler:
         currentUrl = self.url
         page = 1
 
+        scraper = cloudscraper.create_scraper()
+
         while currentUrl:
             try:
-                request = urllib.request.Request(currentUrl, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'})
-                content = urllib.request.urlopen(request)
-            except urllib.error.URLError as e:
-                Colors.print(f"Error occurred while opening the URL: {e.reason}", Colors.RED)
-                break
-            except urllib.error.HTTPError as e:
-                Colors.print(f"HTTP Error: {e.code} {e.reason}", Colors.RED)
-                break
-
-            try:
-                beautifulSoup = BeautifulSoup(content, 'html.parser')
+                response = scraper.get(currentUrl, timeout=10)
+                if 'cf-browser-verification' in response.text:
+                    Colors.print('Cloudflare challenge detected. Aborting.', Colors.RED)
+                    break
+                beautifulSoup = BeautifulSoup(response.text, 'html.parser')
             except Exception as e:
-                Colors.print(f"Error occurred while parsing the page: {e}", Colors.RED)
+                Colors.print(f"Error occurred while fetching the page: {e}", Colors.RED)
                 break
 
             for DOMLink in beautifulSoup.find_all('a', class_='btn', href=re.compile("^.*?/episodeimages.php\?")):
@@ -61,3 +56,4 @@ class SeasonCrawler:
                 Colors.print(f"Failed to crawl {epLink}: {e}", Colors.RED)
 
         return picLinks
+

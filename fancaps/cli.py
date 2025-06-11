@@ -5,7 +5,7 @@ from . import Crawler, Downloader, Colors, UrlSupport
 
 
 def process_single_url(url: str, output: str) -> None:
-    url_type = UrlSupport.getType(url)
+    url_type = UrlSupport().getType(url)
     Colors.print(f"URL-Typ: {url_type}", Colors.CYAN)
 
     if url_type not in {"season", "movie", "episode"}:

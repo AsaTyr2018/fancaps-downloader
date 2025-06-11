@@ -1,6 +1,6 @@
 import re
 from bs4 import BeautifulSoup
-import urllib.request
+import cloudscraper
 from scraper.utils.url_utils import thumb_to_cdn
 
 class MovieCrawler:
@@ -23,14 +23,17 @@ class MovieCrawler:
 
         thumb_pattern = re.compile(r"^https://moviethumbs.*?fancaps\.net/")
 
+        scraper = cloudscraper.create_scraper()
+
         while currentUrl:
             try:
-                # Fetch and parse the webpage
-                request = urllib.request.Request(currentUrl, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'})
-                page = urllib.request.urlopen(request)
-                beautifulSoup = BeautifulSoup(page, "html.parser")
+                response = scraper.get(currentUrl, timeout=10)
+                if 'cf-browser-verification' in response.text:
+                    print('Cloudflare challenge detected. Aborting.')
+                    break
+                beautifulSoup = BeautifulSoup(response.text, "html.parser")
             except Exception as e:
-                print(f"Error fetching or parsing page: {e}")
+                print(f"Error fetching page: {e}")
                 break
 
             for img in beautifulSoup.find_all("img", src=thumb_pattern):
@@ -58,3 +61,4 @@ class MovieCrawler:
             'subfolder': subfolder,
             'links': picLinks
         }
+
