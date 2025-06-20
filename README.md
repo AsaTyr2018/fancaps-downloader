@@ -14,6 +14,7 @@ Preview:
 ## ✨ Features
 
 * ✅ Download image galleries from fancaps.net (TV, Anime, Movies)
+* ✅ Start from any Fancaps page and auto-discover season or movie links
 * ✅ CLI mode (`fancaps-downloader.py`) for manual and scripted downloads
 * ✅ Daemon mode (`fancaps-daemon.py`) for automatic background processing
 * ✅ Multi-threaded downloads with progress bars and automatic retry
@@ -57,6 +58,9 @@ Downloads run concurrently with progress bars and retry on failures.
 * `https://fancaps.net/{tv|anime}/showimages.php?...`
 * `https://fancaps.net/{tv|anime}/episodeimages.php?...`
 * `https://fancaps.net/movies/MovieImages.php?...`
+
+Other Fancaps pages can be given as a base URL. The crawler will scan the page
+for links matching the above patterns and process them automatically.
 
 ⚠️ **Note:** If the URL contains `&`, wrap it in **double quotes**.
 

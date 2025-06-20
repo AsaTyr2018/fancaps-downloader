@@ -9,7 +9,7 @@ class UrlSupport:
 
 
     def getType(self, url):
-        for type, reSupportedUrl in self.reSupportedUrls.items():
-            if re.search(reSupportedUrl, url):
-                return type
+        for url_type, pattern in self.reSupportedUrls.items():
+            if re.search(pattern, url):
+                return url_type
         return None
