@@ -23,6 +23,9 @@ class AltEpisodeCrawler:
         while current_url:
             try:
                 response = scraper.get(current_url, timeout=10)
+                if "cf-browser-verification" in response.text:
+                    Colors.print("Cloudflare challenge detected. Aborting.", Colors.RED)
+                    break
                 soup = BeautifulSoup(response.text, "html.parser")
             except Exception as e:
                 Colors.print(f"Error opening {current_url}: {e}", Colors.RED)
@@ -67,6 +70,9 @@ class AltSeasonCrawler:
         while current_url:
             try:
                 response = scraper.get(current_url, timeout=10)
+                if "cf-browser-verification" in response.text:
+                    Colors.print("Cloudflare challenge detected. Aborting.", Colors.RED)
+                    break
                 soup = BeautifulSoup(response.text, "html.parser")
             except Exception as e:
                 Colors.print(f"Error occurred while fetching the page: {e}", Colors.RED)
@@ -124,5 +130,14 @@ class AltCrawler:
             output = []
 
         Colors.print(f"{url} crawling finished.", Colors.YELLOW)
+
+        empty = True
+        for item in output:
+            if item.get("links"):
+                empty = False
+            else:
+                Colors.print("No images found for this entry. The page may be blocked or invalid.", Colors.WARNING)
+        if empty:
+            Colors.print("No image links parsed from URL. Possible blocking or invalid URL.", Colors.WARNING)
         return output
 
