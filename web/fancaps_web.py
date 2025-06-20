@@ -21,9 +21,11 @@ def index():
     if request.method == "POST":
         if "add_url" in request.form:
             url = request.form.get("url", "").strip()
+            alt = "alt_scraper" in request.form
             if url:
+                entry = f"ALT|{url}" if alt else url
                 with open(QUEUE_FILE, "a") as f:
-                    f.write(url + "\n")
+                    f.write(entry + "\n")
         elif "delete_url" in request.form:
             url_to_delete = request.form.get("delete_url", "").strip()
             queue = read_lines(QUEUE_FILE)

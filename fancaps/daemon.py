@@ -2,7 +2,7 @@
 import time
 import os
 import logging
-from . import Crawler, Downloader, Colors, UrlSupport
+from . import Crawler, AltCrawler, Downloader, Colors, UrlSupport
 
 QUEUE_FILE = "/opt/fancaps/queue.txt"
 ARCHIVE_FILE = "/opt/fancaps/archive.txt"
@@ -40,14 +40,21 @@ def append_to_archive(url: str) -> None:
         f.write(url + "\n")
 
 
-def process_single_url(url: str) -> bool:
+def process_single_url(entry: str) -> bool:
+    alt = False
+    if entry.startswith("ALT|"):
+        alt = True
+        url = entry.split("|", 1)[1]
+    else:
+        url = entry
+
     url_type = UrlSupport().getType(url)
     Colors.print(f"URL-Typ: {url_type}")
     if url_type not in {"season", "movie", "episode"}:
         Colors.print(f"Unsupported URL-Typ or invalid URL: {url}")
         return False
 
-    crawler = Crawler()
+    crawler = AltCrawler() if alt else Crawler()
     links = crawler.crawl(url)
     if not links:
         Colors.print("No links to download found.")
@@ -67,13 +74,13 @@ def process_single_url(url: str) -> bool:
 def daemon_loop() -> None:
     Colors.print("Fancaps Daemon Started")
     while True:
-        url = read_first_url()
-        if url:
-            Colors.print(f"New URL found: {url}")
-            success = process_single_url(url)
+        entry = read_first_url()
+        if entry:
+            Colors.print(f"New URL found: {entry}")
+            success = process_single_url(entry)
             if success:
-                remove_url_from_queue(url)
-                append_to_archive(url)
+                remove_url_from_queue(entry)
+                append_to_archive(entry)
         else:
             Colors.print("No new URLs. Starting Loop...")
         time.sleep(INTERVAL_SECONDS)
