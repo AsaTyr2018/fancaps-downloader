@@ -48,7 +48,7 @@ pip install -r requirements.txt
 Run the downloader directly:
 
 ```bash
-python fancaps-downloader.py [URL] [--output DIR] [--batch-type {season,movie}] [--batch-file FILE]
+python fancaps-downloader.py [URL] [--output DIR] [--batch-type {season,movie}] [--batch-file FILE] [--alt]
 ```
 
 Supported links:
@@ -58,6 +58,7 @@ https://fancaps.net/{tv|anime}/episodeimages.php?...
 https://fancaps.net/movies/MovieImages.php?...
 ```
 Wrap URLs containing `&` in quotes.
+Use `--alt` to activate the alternative crawler for season or episode URLs.
 
 ## Notes
 - `queue.txt` is writable via the web interface, `archive.txt` is read only.
