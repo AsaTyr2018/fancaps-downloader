@@ -6,7 +6,17 @@ REPO_URL="https://github.com/AsaTyr2018/fancaps-downloader.git"
 INSTALL_DIR="/opt/fancaps"
 DAEMON_SERVICE="/etc/systemd/system/fancaps-daemon.service"
 WEB_SERVICE="/etc/systemd/system/fancaps-web.service"
+VENV_DIR="$INSTALL_DIR/venv"
 RUN_USER="${SUDO_USER:-$(whoami)}"
+
+create_venv() {
+    if [ ! -d "$VENV_DIR" ]; then
+        sudo python3 -m venv "$VENV_DIR"
+        sudo "$VENV_DIR/bin/pip" install --upgrade pip
+    fi
+    sudo "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+    sudo chown -R "$RUN_USER":"$RUN_USER" "$VENV_DIR"
+}
 
 create_services() {
     cat <<SERVICE | sudo tee "$DAEMON_SERVICE" > /dev/null
@@ -17,7 +27,7 @@ After=network.target
 [Service]
 Type=simple
 User=${RUN_USER}
-ExecStart=/usr/bin/python3 ${INSTALL_DIR}/fancaps-daemon.py
+ExecStart=${VENV_DIR}/bin/python ${INSTALL_DIR}/fancaps-daemon.py
 WorkingDirectory=${INSTALL_DIR}
 Restart=always
 RestartSec=10
@@ -34,7 +44,7 @@ After=network.target
 [Service]
 Type=simple
 User=${RUN_USER}
-ExecStart=/usr/bin/python3 ${INSTALL_DIR}/web/fancaps_web.py
+ExecStart=${VENV_DIR}/bin/python ${INSTALL_DIR}/web/fancaps_web.py
 WorkingDirectory=${INSTALL_DIR}/web
 Restart=always
 RestartSec=10
@@ -50,6 +60,7 @@ install_app() {
     else
         sudo git clone "$REPO_URL" "$INSTALL_DIR"
     fi
+    create_venv
     sudo mkdir -p "$INSTALL_DIR/downloads"
     sudo touch "$INSTALL_DIR/queue.txt" "$INSTALL_DIR/archive.txt"
     sudo chown -R "$RUN_USER":"$RUN_USER" "$INSTALL_DIR"
@@ -65,6 +76,7 @@ update_app() {
     if [ -d "$INSTALL_DIR/.git" ]; then
         cd "$INSTALL_DIR"
         sudo -u "$RUN_USER" git pull
+        create_venv
         sudo systemctl restart fancaps-daemon fancaps-web
         echo "Update complete"
     else
