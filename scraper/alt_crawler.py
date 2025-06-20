@@ -45,7 +45,12 @@ class AltEpisodeCrawler:
                 except Exception as e:
                     Colors.print(f"Failed to fetch image {link}: {e}", Colors.RED)
 
-            next_page = soup.find("a", href=lambda href: href and f"&page={page_number + 1}" in href)
+            next_page = soup.find(
+                "a",
+                href=lambda href: href
+                and f"&page={page_number + 1}" in href
+                and href != "#",
+            )
             if next_page:
                 page_number += 1
                 current_url = f"{url}&page={page_number}"
@@ -89,7 +94,12 @@ class AltSeasonCrawler:
                     if name == match.group(1):
                         ep_links.append(href)
 
-            if soup.find("a", text=re.compile(r"Next", re.IGNORECASE)):
+            next_button = soup.find(
+                "a",
+                text=re.compile(r"Next", re.IGNORECASE),
+                href=lambda href: href and href != "#",
+            )
+            if next_button:
                 page += 1
                 current_url = url + f"&page={page}"
             else:
