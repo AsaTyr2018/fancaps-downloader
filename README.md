@@ -1,232 +1,72 @@
 # Fancaps Downloader & Web Daemon Interface
 
-An automated image downloader and queue system for \[fancaps.net], built with Python. This repository includes two main components:
-
-* `fancaps-downloader.py`: A **standalone CLI tool** for semi-automatic usage (no web interface).
-* `fancaps-daemon.py`: A **fully automated Linux server daemon** with a **Flask-based web UI** to manage and monitor downloads.
-
-> Original CLI tool based on the work by m-patino, improved and extended with automation and interface by AsaTyr.
-
----
-Preview:
 ![grafik](https://github.com/user-attachments/assets/bd5ce8a3-a8a4-4f9c-937c-5c8b7811e684)
 
-## ✨ Features
+## Description
+A Python based image crawler and downloader for [fancaps.net]. The project offers two ways to grab screenshots:
 
-* ✅ Download image galleries from fancaps.net (TV, Anime, Movies)
-* ✅ Start from any Fancaps page and auto-discover season or movie links
-* ✅ CLI mode (`fancaps-downloader.py`) for manual and scripted downloads
-* ✅ Daemon mode (`fancaps-daemon.py`) for automatic background processing
-* ✅ Multi-threaded downloads with progress bars and automatic retry
-* ✅ `queue.txt` + `archive.txt` system for organized tracking
-* ✅ Web UI to manage queue entries (add/remove)
-* ✅ Read-only archive view in web UI
-* ✅ Live log viewer in the web UI
-* ✅ Fully runs as a background service (systemd ready)
+* **CLI tool** (`fancaps-downloader.py`) – run manually or in scripts.
+* **Daemon + Web UI** (`fancaps-daemon.py`) – background service with a small Flask frontend to manage the download queue.
 
----
+The original idea comes from m-patino's script and has been expanded with automation and a live interface.
 
-## 📦 Requirements
+## Features
+- Download TV, Anime and Movie galleries
+- Automatic crawling from any Fancaps page
+- Multi-threaded downloads with progress bars and retry
+- Queue/Archive tracking for automated operation
+- Flask based web panel to add/remove URLs and view logs
+- Runs as a systemd service (daemon and web)
 
-* Python 3.8+
-* Linux system (tested on Debian/Ubuntu)
-* Git
-* `beautifulsoup4`, `cloudscraper`, `tqdm`, `flask`
+## Installer
+A helper script `install.sh` sets up everything under `/opt/fancaps`:
 
-Install with:
+```bash
+sudo ./install.sh install   # fresh installation
+sudo ./install.sh update    # pull latest changes and restart services
+sudo ./install.sh deinstall # remove services and files
+```
+
+The installer clones the repository, creates a Python virtual environment, installs dependencies and configures `fancaps-daemon` and `fancaps-web` systemd units.
+
+## Requirements
+### For the Daemon
+- Python 3.8+
+- Linux (tested on Debian/Ubuntu)
+- `beautifulsoup4`, `cloudscraper`, `tqdm`
+
+### For the Web Interface
+- Flask
+
+All dependencies can be installed via:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## 🧪 CLI Usage (`fancaps-downloader.py`)
-
-### Arguments
-
-* `url`: Single URL to download (season/movie/episode)
-* `--output`: Target folder for saving the images (default: `Downloads`)
-* `--batch-type`: Type of content in batch mode, either `season` or `movie` (optional)
-* `--batch-file`: Path to a text file containing URLs
-* `-h`, `--help`: Show help message
-
-Downloads run concurrently with progress bars and retry on failures.
-
-### Supported URLs
-
-* `https://fancaps.net/{tv|anime}/showimages.php?...`
-* `https://fancaps.net/{tv|anime}/episodeimages.php?...`
-* `https://fancaps.net/movies/MovieImages.php?...`
-
-Other Fancaps pages can be given as a base URL. The crawler will scan the page
-for links matching the above patterns and process them automatically.
-
-⚠️ **Note:** If the URL contains `&`, wrap it in **double quotes**.
-
-### Examples:
-
-Download a single episode or season:
+## CLI Usage
+Run the downloader directly:
 
 ```bash
-python fancaps-downloader.py --output "Download" "https://fancaps.net/tv/showimages.php?id=1234"
+python fancaps-downloader.py [URL] [--output DIR] [--batch-type {season,movie}] [--batch-file FILE]
 ```
 
-Batch download from file:
-
-```bash
-python fancaps-downloader.py --batch-file "batch.txt" --batch-type season --output "SeasonDownloads"
+Supported links:
 ```
-You can also run the CLI via `python -m fancaps.cli`.
-
----
-
-## ⚙️ Installation (Daemon + Web UI)
-
-### 1. Clone the Repository
-
-```bash
-cd /opt
-sudo git clone https://github.com/AsaTyr2018/fancaps-downloader.git fancaps
-cd fancaps
-sudo chown -R $USER:$USER .
+https://fancaps.net/{tv|anime}/showimages.php?...  
+https://fancaps.net/{tv|anime}/episodeimages.php?...  
+https://fancaps.net/movies/MovieImages.php?...
 ```
+Wrap URLs containing `&` in quotes.
 
-### 2. Setup Directory Structure
+## Notes
+- `queue.txt` is writable via the web interface, `archive.txt` is read only.
+- Web UI listens on port 5080 by default.
+- Combine with Samba or any HTTP server to share the downloads folder.
 
-```bash
-mkdir -p /opt/fancaps/downloads
-chmod 775 /opt/fancaps/downloads
-```
+## Used Technologies
+- Python + Flask
+- BeautifulSoup & Cloudscreper for scraping
+- tqdm for progress display
+- systemd for service management
 
-### 3. Install and Enable Services
-
-```bash
-sudo ./install.sh install
-```
-
----
-
-## 🚀 Running the Daemon
-
-Test manually:
-
-```bash
-python3 fancaps-daemon.py
-```
-The daemon reads `/opt/fancaps/queue.txt` every 5 minutes and saves files to `/opt/fancaps/downloads`.
-
-Run as service:
-
-```ini
-# /etc/systemd/system/fancaps-daemon.service
-[Unit]
-Description=Fancaps Download Daemon
-After=network.target
-
-[Service]
-Type=simple
-User=yourusername
-ExecStart=/opt/fancaps/venv/bin/python /opt/fancaps/fancaps-daemon.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable fancaps-daemon
-sudo systemctl start fancaps-daemon
-```
-
-Logs (if configured):
-
-```
-/var/log/fancaps-daemon.log
-```
-
----
-
-## 🌐 Running the Web UI
-
-Start manually (default: port 5080):
-
-```bash
-cd /opt/fancaps/web
-python3 fancaps_web.py
-```
-
-Access via:
-
-```
-http://<server-ip>:5080
-```
-
-A real-time log view is available at `http://<server-ip>:5080/log`.
-### Optional Auto-Start (systemd):
-
-```ini
-# /etc/systemd/system/fancaps-web.service
-[Unit]
-Description=Fancaps Web UI
-After=network.target
-
-[Service]
-Type=simple
-User=yourusername
-ExecStart=/opt/fancaps/venv/bin/python /opt/fancaps/web/fancaps_web.py
-WorkingDirectory=/opt/fancaps/web
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable it:
-
-```bash
-sudo systemctl enable fancaps-web
-sudo systemctl start fancaps-web
-```
-
----
-
-## 📁 File Structure Overview
-
-```bash
-/opt/fancaps
-├── fancaps-downloader.py       # CLI entry point
-├── fancaps-daemon.py           # Daemon entry point
-├── fancaps/                    # Library package
-│   ├── cli.py                  # CLI logic
-│   ├── daemon.py               # Daemon logic
-│   └── web.py                  # Web launcher
-├── scraper/                    # Crawlers and downloader
-│   ├── crawler.py
-│   ├── downloader.py
-│   ├── url_support.py
-│   ├── crawlers/
-│   └── utils/
-├── web/                        # Flask application
-│   ├── fancaps_web.py
-│   └── templates/
-├── queue.txt                   # URLs to download
-├── archive.txt                 # Completed downloads
-└── downloads/                  # Download target
-```
-
----
-
-## 📝 Notes
-
-* The web interface allows editing `queue.txt` but not `archive.txt`.
-* Ensure `queue.txt` is writable by both daemon and Flask UI.
-* Avoid port conflicts; default Flask port is 5080.
-* You can combine this setup with Samba or any HTTP file server to share the download folder.
-
----
