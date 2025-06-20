@@ -30,12 +30,12 @@ Preview:
 * Python 3.8+
 * Linux system (tested on Debian/Ubuntu)
 * Git
-* `beautifulsoup4`, `tqdm`, `flask`
+* `beautifulsoup4`, `cloudscraper`, `tqdm`, `flask`
 
 Install with:
 
 ```bash
-pip install beautifulsoup4 tqdm flask
+pip install -r requirements.txt
 ```
 
 ---
@@ -95,6 +95,12 @@ mkdir -p /opt/fancaps/downloads
 chmod 775 /opt/fancaps/downloads
 ```
 
+### 3. Install and Enable Services
+
+```bash
+sudo ./install.sh install
+```
+
 ---
 
 ## 🚀 Running the Daemon
@@ -117,7 +123,7 @@ After=network.target
 [Service]
 Type=simple
 User=yourusername
-ExecStart=/usr/bin/python3 /opt/fancaps/fancaps-daemon.py
+ExecStart=/opt/fancaps/venv/bin/python /opt/fancaps/fancaps-daemon.py
 Restart=always
 RestartSec=10
 
@@ -168,7 +174,7 @@ After=network.target
 [Service]
 Type=simple
 User=yourusername
-ExecStart=/usr/bin/python3 /opt/fancaps/web/fancaps_web.py
+ExecStart=/opt/fancaps/venv/bin/python /opt/fancaps/web/fancaps_web.py
 WorkingDirectory=/opt/fancaps/web
 Restart=always
 RestartSec=10
