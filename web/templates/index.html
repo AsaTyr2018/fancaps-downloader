@@ -95,12 +95,21 @@
             <h2>📥 Queue</h2>
             <form method="POST">
                 <input type="text" name="url" placeholder="New Fancaps-URL" required>
+                <label>
+                    <input type="checkbox" name="alt_scraper"> Alternative scraper
+                </label>
                 <button type="submit" name="add_url">Add</button>
             </form>
             <ul>
                 {% for url in queue %}
                 <li>
-                    <a href="{{ url }}" target="_blank">{{ url }}</a>
+                    {% set parts = url.split('|') %}
+                    {% if parts|length == 2 and parts[0] == 'ALT' %}
+                        {% set actual = parts[1] %}
+                        <a href="{{ actual }}" target="_blank">{{ actual }}</a> (ALT)
+                    {% else %}
+                        <a href="{{ url }}" target="_blank">{{ url }}</a>
+                    {% endif %}
                     <form method="POST" style="display:inline">
                         <input type="hidden" name="delete_url" value="{{ url }}">
                         <button type="submit">🗑️ Remove</button>
