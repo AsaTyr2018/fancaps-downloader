@@ -1,11 +1,5 @@
 import re
 import os
-import concurrent.futures
-
-# Limit for concurrent workers used by the alternative crawler.  A lower default
-# prevents hitting the "Too many open files" error when nested thread pools are
-# created.
-DEFAULT_MAX_WORKERS = 10
 from bs4 import BeautifulSoup
 import cloudscraper
 from urllib.parse import urljoin
@@ -14,9 +8,8 @@ from scraper.url_support import UrlSupport
 
 
 class AltEpisodeCrawler:
-    def crawl(self, url, max_workers=DEFAULT_MAX_WORKERS):
+    def crawl(self, url):
         pic_links = []
-        picture_pages = []
         page_number = 1
         current_url = url
 
@@ -43,7 +36,14 @@ class AltEpisodeCrawler:
                 link = a.get("href")
                 if not link.startswith("http"):
                     link = urljoin("https://fancaps.net", link)
-                picture_pages.append(link)
+                try:
+                    r = scraper.get(link, timeout=10)
+                    img_soup = BeautifulSoup(r.text, "html.parser")
+                    img = img_soup.find("img", id="imageTag")
+                    if img:
+                        pic_links.append(img.get("src"))
+                except Exception as e:
+                    Colors.print(f"Failed to fetch image {link}: {e}", Colors.RED)
 
             next_page = soup.find(
                 "a",
@@ -57,27 +57,6 @@ class AltEpisodeCrawler:
             else:
                 current_url = None
 
-        def fetch_image(link):
-            # Create a new scraper per image and close it after use to avoid
-            # leaving open file descriptors.
-            with cloudscraper.create_scraper() as local_scraper:
-                try:
-                    r = local_scraper.get(link, timeout=10)
-                    img_soup = BeautifulSoup(r.text, "html.parser")
-                    img = img_soup.find("img", id="imageTag")
-                    if img:
-                        return img.get("src")
-                except Exception as e:
-                    Colors.print(f"Failed to fetch image {link}: {e}", Colors.RED)
-                return None
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [executor.submit(fetch_image, p) for p in picture_pages]
-            for future in concurrent.futures.as_completed(futures):
-                result = future.result()
-                if result:
-                    pic_links.append(result)
-
         return {
             "subfolder": subfolder,
             "links": pic_links,
@@ -85,7 +64,7 @@ class AltEpisodeCrawler:
 
 
 class AltSeasonCrawler:
-    def crawl(self, url, max_workers=DEFAULT_MAX_WORKERS):
+    def crawl(self, url):
         ep_links = []
         pic_links = []
         page = 1
@@ -126,26 +105,19 @@ class AltSeasonCrawler:
             else:
                 current_url = None
 
-        def crawl_episode(link):
-            crawler = AltEpisodeCrawler()
-            return crawler.crawl(link, max_workers=max_workers)
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = {executor.submit(crawl_episode, l): l for l in ep_links}
-            for future in concurrent.futures.as_completed(futures):
-                link = futures[future]
-                try:
-                    episode_result = future.result()
-                    pic_links.append(episode_result)
-                    Colors.print(f"\t{link} crawled", Colors.GREEN)
-                except Exception as e:
-                    Colors.print(f"Failed to crawl {link}: {e}", Colors.RED)
-
+        crawler = AltEpisodeCrawler()
+        for ep_link in ep_links:
+            try:
+                episode_result = crawler.crawl(ep_link)
+                pic_links.append(episode_result)
+                Colors.print(f"\t{ep_link} crawled", Colors.GREEN)
+            except Exception as e:
+                Colors.print(f"Failed to crawl {ep_link}: {e}", Colors.RED)
         return pic_links
 
 
 class AltCrawler:
-    def crawl(self, url, visited=None, max_workers=DEFAULT_MAX_WORKERS):
+    def crawl(self, url, visited=None):
         if visited is None:
             visited = set()
         if url in visited:
@@ -159,10 +131,10 @@ class AltCrawler:
 
         if url_type == "season":
             crawler = AltSeasonCrawler()
-            output = crawler.crawl(url, max_workers=max_workers)
+            output = crawler.crawl(url)
         elif url_type == "episode":
             crawler = AltEpisodeCrawler()
-            output = [crawler.crawl(url, max_workers=max_workers)]
+            output = [crawler.crawl(url)]
         else:
             Colors.print("Alternative crawler only supports season or episode URLs.", Colors.RED)
             output = []
