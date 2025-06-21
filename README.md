@@ -48,8 +48,7 @@ pip install -r requirements.txt
 Run the downloader directly:
 
 ```bash
-python fancaps-downloader.py [URL] [--output DIR] [--batch-type {season,movie}] \
-    [--batch-file FILE] [--alt] [--workers N]
+python fancaps-downloader.py [URL] [--output DIR] [--batch-type {season,movie}] [--batch-file FILE] [--alt]
 ```
 
 Supported links:
@@ -60,10 +59,6 @@ https://fancaps.net/movies/MovieImages.php?...
 ```
 Wrap URLs containing `&` in quotes.
 Use `--alt` to activate the alternative crawler for season or episode URLs.
-The alternative crawler downloads picture pages concurrently for faster
-processing. It defaults to **10** workers to avoid exhausting file handles.
-When using the library directly you may pass a `max_workers` parameter or the
-`--workers` option on the CLI to control the level of parallelism.
 
 ## Notes
 - `queue.txt` is writable via the web interface, `archive.txt` is read only.
