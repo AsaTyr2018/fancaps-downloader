@@ -1,6 +1,11 @@
 import re
 import os
 import concurrent.futures
+
+# Limit for concurrent workers used by the alternative crawler.  A lower default
+# prevents hitting the "Too many open files" error when nested thread pools are
+# created.
+DEFAULT_MAX_WORKERS = 10
 from bs4 import BeautifulSoup
 import cloudscraper
 from urllib.parse import urljoin
@@ -9,7 +14,7 @@ from scraper.url_support import UrlSupport
 
 
 class AltEpisodeCrawler:
-    def crawl(self, url, max_workers=None):
+    def crawl(self, url, max_workers=DEFAULT_MAX_WORKERS):
         pic_links = []
         picture_pages = []
         page_number = 1
@@ -53,16 +58,18 @@ class AltEpisodeCrawler:
                 current_url = None
 
         def fetch_image(link):
-            local_scraper = cloudscraper.create_scraper()
-            try:
-                r = local_scraper.get(link, timeout=10)
-                img_soup = BeautifulSoup(r.text, "html.parser")
-                img = img_soup.find("img", id="imageTag")
-                if img:
-                    return img.get("src")
-            except Exception as e:
-                Colors.print(f"Failed to fetch image {link}: {e}", Colors.RED)
-            return None
+            # Create a new scraper per image and close it after use to avoid
+            # leaving open file descriptors.
+            with cloudscraper.create_scraper() as local_scraper:
+                try:
+                    r = local_scraper.get(link, timeout=10)
+                    img_soup = BeautifulSoup(r.text, "html.parser")
+                    img = img_soup.find("img", id="imageTag")
+                    if img:
+                        return img.get("src")
+                except Exception as e:
+                    Colors.print(f"Failed to fetch image {link}: {e}", Colors.RED)
+                return None
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(fetch_image, p) for p in picture_pages]
@@ -78,7 +85,7 @@ class AltEpisodeCrawler:
 
 
 class AltSeasonCrawler:
-    def crawl(self, url, max_workers=None):
+    def crawl(self, url, max_workers=DEFAULT_MAX_WORKERS):
         ep_links = []
         pic_links = []
         page = 1
@@ -138,7 +145,7 @@ class AltSeasonCrawler:
 
 
 class AltCrawler:
-    def crawl(self, url, visited=None, max_workers=None):
+    def crawl(self, url, visited=None, max_workers=DEFAULT_MAX_WORKERS):
         if visited is None:
             visited = set()
         if url in visited:
