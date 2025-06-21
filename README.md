@@ -59,6 +59,9 @@ https://fancaps.net/movies/MovieImages.php?...
 ```
 Wrap URLs containing `&` in quotes.
 Use `--alt` to activate the alternative crawler for season or episode URLs.
+The alternative crawler now downloads picture pages concurrently for faster
+processing. When using the library directly you may pass a `max_workers`
+parameter to `AltCrawler.crawl()` to control the level of parallelism.
 
 ## Notes
 - `queue.txt` is writable via the web interface, `archive.txt` is read only.
