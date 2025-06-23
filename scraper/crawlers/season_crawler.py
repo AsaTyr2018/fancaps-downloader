@@ -1,3 +1,5 @@
+"""Crawler for TV and anime seasons."""
+
 from bs4 import BeautifulSoup
 from scraper.crawlers import episode_crawler
 import re
@@ -28,10 +30,10 @@ class SeasonCrawler:
                 Colors.print(f"Error occurred while fetching the page: {e}", Colors.RED)
                 break
 
-            for DOMLink in beautifulSoup.find_all('a', class_='btn', href=re.compile("^.*?/episodeimages.php\?")):
+            for DOMLink in beautifulSoup.find_all('a', class_='btn', href=re.compile(r"^.*?/episodeimages.php\?")):
                 href = DOMLink.get('href')
                 if href:
-                    if not re.match("^https://.*?/episodeimages.php\?", href):
+                    if not re.match(r"^https://.*?/episodeimages.php\?", href):
                         href = 'https://fancaps.net' + DOMLink.get('href')
 
                     match = re.search(r"https://fancaps.net/.*?/episodeimages.php\?\d+-(.*?)/", href)
@@ -56,4 +58,3 @@ class SeasonCrawler:
                 Colors.print(f"Failed to crawl {epLink}: {e}", Colors.RED)
 
         return picLinks
-

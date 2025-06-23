@@ -1,3 +1,5 @@
+"""Primary crawler for Fancaps URLs."""
+
 from scraper.url_support import UrlSupport
 from scraper.crawlers import episode_crawler, season_crawler, movie_crawler
 from scraper.utils.colors import Colors

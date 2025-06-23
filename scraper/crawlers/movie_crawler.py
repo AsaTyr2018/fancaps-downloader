@@ -1,3 +1,5 @@
+"""Crawler for movie screenshots."""
+
 import re
 from bs4 import BeautifulSoup
 import cloudscraper
@@ -43,7 +45,7 @@ class MovieCrawler:
                     alt = imgAlt
                 if alt == imgAlt:
                     picLinks.append(thumb_to_cdn(imgSrc))
-            
+
             try:
                 # Generate and verify the existence of the next page URL
                 next = url.replace(f'https://fancaps.net/movies/','') +f"&page={pageNumber + 1}"
@@ -56,9 +58,8 @@ class MovieCrawler:
             except Exception as e:
                 print(f"Error processing next page: {e}")
                 break
-        
+
         return {
             'subfolder': subfolder,
             'links': picLinks
         }
-
