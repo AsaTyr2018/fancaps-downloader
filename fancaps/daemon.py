@@ -22,21 +22,21 @@ setattr(Colors, "print", lambda msg, *_: logging.info(msg))
 def read_first_url():
     if not os.path.exists(QUEUE_FILE):
         return None
-    with open(QUEUE_FILE, "r") as f:
+    with open(QUEUE_FILE, "r", encoding="utf-8") as f:
         lines = [line.strip() for line in f if line.strip()]
     return lines[0] if lines else None
 
 
 def remove_url_from_queue(url: str) -> None:
-    with open(QUEUE_FILE, "r") as f:
+    with open(QUEUE_FILE, "r", encoding="utf-8") as f:
         lines = [line.strip() for line in f if line.strip()]
     lines = [line for line in lines if line != url]
-    with open(QUEUE_FILE, "w") as f:
+    with open(QUEUE_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + ("\n" if lines else ""))
 
 
 def append_to_archive(url: str) -> None:
-    with open(ARCHIVE_FILE, "a") as f:
+    with open(ARCHIVE_FILE, "a", encoding="utf-8") as f:
         f.write(url + "\n")
 
 

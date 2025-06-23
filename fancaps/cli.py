@@ -30,7 +30,7 @@ def process_batch(file_path: str, forced_type: str, output: str, alt: bool = Fal
     crawler = AltCrawler() if alt else Crawler()
     downloader = Downloader()
 
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         urls = [line.strip() for line in f if line.strip()]
 
     Colors.print(f"Batch started: {len(urls)} URLs", Colors.CYAN)

@@ -1,3 +1,5 @@
+"""Alternative crawler implementation for Fancaps."""
+
 import re
 import os
 from bs4 import BeautifulSoup

@@ -9,11 +9,11 @@ ARCHIVE_FILE = "/opt/fancaps/archive.txt"
 def read_lines(path):
     if not os.path.exists(path):
         return []
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
 
 def write_lines(path, lines):
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
 @app.route("/", methods=["GET", "POST"])
@@ -24,7 +24,7 @@ def index():
             alt = "alt_scraper" in request.form
             if url:
                 entry = f"ALT|{url}" if alt else url
-                with open(QUEUE_FILE, "a") as f:
+                with open(QUEUE_FILE, "a", encoding="utf-8") as f:
                     f.write(entry + "\n")
         elif "delete_url" in request.form:
             url_to_delete = request.form.get("delete_url", "").strip()
